@@ -70,7 +70,7 @@ index=* sourcetype="dnslog"
 ```
 [Splunk_field_extraction_dns_log](./Splunk_field_extraction_dns_logs.png)
 
-### 3. Top Queried Domains in a Time Window
+### 3. Top Queried Domains 
 - Use the top command to see the top 10 domains queried
 
 ```
@@ -81,6 +81,18 @@ index=* sourcetype="dnslog"
 
 ```
 [top10domains](./top10domains.png)
+
+### 4. Rare Queried Domains 
+- Use the rare command to see the rare 10 domains queried
+
+```
+index=* sourcetype="dnslog"
+| rex field=_raw "^(?<timestamp>\d+\.\d+)\s+(?<session_id>\S+)\s+(?<src_ip>\d{1,3}(?:\.\d{1,3}){3})\s+(?<src_port>\d+)\s+(?<dst_ip>\d{1,3}(?:\.\d{1,3}){3})\s+(?<dst_port>\d+)\s+(?<protocol>\S+)\s+(?<transaction_id>\d+)\s+(?<query_name>\S+)\s+(?<query_count>\d+)\s+(?<query_class>\S+)\s+(?<ttl>\d+)\s+(?<record_type>\S+)\s+(?<field14>\S+)\s+(?<field15>\S+)\s+(?<flag1>[FT])\s+(?<flag2>[FT])\s+(?<flag3>[FT])\s+(?<flag4>[FT])\s+(?<response_code>\d+)\s+(?<field21>\S+)\s+(?<field22>\S+)\s+(?<final_flag>[FT])"
+| table timestamp session_id src_ip src_port dst_ip dst_port protocol transaction_id query_name query_count query_class ttl record_type flag1 flag2 flag3 flag4 response_code final_flag
+| rare query_name
+
+```
+[rare10domains](./rare10domains.png)
 
 ### 3. Identify Anomalies
 - Look for unusual patterns or anomalies in DNS activity.
