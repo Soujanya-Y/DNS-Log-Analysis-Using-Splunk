@@ -68,7 +68,7 @@ index=* sourcetype="dnslog"
 [Splunk_field_extraction_dns_log](./Splunk_field_extraction_dns_logs.png)
 
 ```
-[Splunk_field_extraction_dns_log](./Splunk_field_extraction_dns_logs)
+[Splunk_field_extraction_dns_log](./Splunk_field_extraction_dns_logs.png)
 
 ### 3. Identify Anomalies
 - Look for unusual patterns or anomalies in DNS activity.
