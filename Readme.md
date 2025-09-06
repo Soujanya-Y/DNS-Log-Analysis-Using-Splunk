@@ -94,21 +94,6 @@ index=* sourcetype="dnslog"
 ```
 [rare10domains](./rare10domains.png)
 
-### 3. Identify Anomalies
-- Look for unusual patterns or anomalies in DNS activity.
-- Example query to identify spikes
-```
-index=_* OR index=* sourcetype=dns_sample  | stats count by fqdn
-```
-
-### 4. Find the top DNS sources
-- Use the top command to count the occurrences of each query type:   
-```
-index=* sourcetype=dns_sample | top fqdn, src_ip
-```
-
-
-
 ### 5. Investigate Suspicious Domains
 - Search for domains associated with known malicious activity or suspicious behavior.
 - Utilize threat intelligence feeds or reputation databases to identify malicious domains such virustotal.com
@@ -120,8 +105,6 @@ index=* sourcetype=dns_sample fqdn="maliciousdomain.com"
 ## Conclusion
 Analyzing DNS log files using Splunk SIEM enables security professionals to detect and respond to potential security incidents effectively. By understanding DNS activity and identifying anomalies, organizations can enhance their overall security posture and protect against various cyber threats.
 
-Feel free to customize these steps according to your specific use case and requirements. 
 
-Happy analyzing!
 
 
