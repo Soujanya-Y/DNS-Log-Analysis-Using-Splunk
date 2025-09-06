@@ -41,7 +41,7 @@ Before analyzing DNS logs in Splunk, ensure the following:
 - Run a search query to verify that the uploaded DNS events are visible.
   
   ```spl
-  index=<your_dns_index> sourcetype=<your_dns_sourcetype>
+  index=* sourcetype=dns_log
 
 
 ## Steps to Analyze DNS Log Files in Splunk SIEM
@@ -51,13 +51,12 @@ Before analyzing DNS logs in Splunk, ensure the following:
 - Enter the following search query to retrieve DNS events   
 ```
 index=* sourcetype=dns_log
+```
 I see the following raw entries in the file
 1331901167.790000	C4Lm8j35dGSjarAZee	192.168.202.80	56035	192.168.202.255	137	udp	20835	\x01\x02__MSBROWSE__\x02	1	C_INTERNET	32	NB	-	-	F	F	T	F	1	-	-	F
 1331901167.670000	CUCyRCVH9UrMcxLQ9	192.168.202.84	52410	192.168.202.255	137	udp	30508	TIRANI	1	C_INTERNET	32	NB	-	-	F	F	T	F	1	-	-	F
 1331901167.940000	CUCyRCVH9UrMcxLQ9	192.168.202.84	52410	192.168.202.255	137	udp	30508	TIRANI	1	C_INTERNET	32	NB	-	-	F	F	T	F	1	-	-	F
 It looks like there are 23 enties.
-
-```
 
 ### 2. Extract Relevant Fields
 - Identify key fields in DNS logs such as source IP, destination IP, domain name, query type, response code, etc.   
