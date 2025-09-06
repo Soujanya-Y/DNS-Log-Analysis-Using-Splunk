@@ -1,71 +1,94 @@
-# 🧠 DNS Log Analysis with Splunk SIEM
+# Analyzing DNS Log Files Using Splunk SIEM
 
-A hands-on guide for uploading, parsing, and analyzing structured DNS log files using **Splunk SIEM**. This project demonstrates how to ingest DNS logs with 23 fields, extract meaningful insights, and detect anomalies or threats.
+## Introduction
+DNS (Domain Name System) logs are crucial for understanding network activity and identifying potential security threats. Splunk SIEM (Security Information and Event Management) provides powerful capabilities for analyzing DNS logs and detecting anomalies or malicious activities.
 
----
+## Prerequisites
+Before analyzing DNS logs in Splunk, ensure the following:
+- Splunk instance is installed and configured.
+- DNS log data sources are configured to forward logs to Splunk.
 
-## 📂 Project Structure
+## Steps to Upload Sample DNS Log Files to Splunk SIEM
 
-dns-log-analysis-splunk/
-├── sample_dns_logs.log # Sample DNS log file (23 fields)
-├── field_extraction_rex.txt # REX expression for Splunk field extraction
-├── queries/
-│ ├── top_queries.spl # SPL for top domains queried
-│ ├── anomaly_detection.spl # SPL to detect spikes or anomalies
-│ ├── suspicious_domains.spl # SPL to find known bad domains
-├── dashboards/ # (Optional) SPL for Splunk dashboards
-└── README.md
+### 1. Prepare Sample DNS Log Files
+- Obtain sample [dns.log](./dns.log) in a suitable format (e.g., text files).
+- Ensure the log files contain relevant DNS events, including source IP, destination IP, domain name, query type, response code, etc.
+- Save the sample log files in a directory accessible by the Splunk instance.
 
----
+### 2. Upload Log Files to Splunk
+- Log in to the Splunk web interface.
+- Navigate to **Settings** > **Add Data**.
+- Select **Upload** as the data input method.
 
-## 📊 About the DNS Log Format
+### 3. Choose File
+- Click on **Select File** and choose the sample DNS log file you prepared earlier.
 
-Each log line contains **23 tab-separated fields**, including:
+### 4. Set Source Type
+- In the **Set Source Type** section, specify the source type for the uploaded log file.
+- Choose the appropriate source type for DNS logs (e.g., `dns` or a custom source type if applicable).
 
-- `timestamp`, `session_id`, `src_ip`, `dst_ip`, `query_name`, `record_type`, TTL, flags, and more.
+### 5. Review Settings
+- Review other settings such as index, host, and sourcetype.
+- Ensure the settings are configured correctly to match the sample DNS log file.
 
-### Example:
+### 6. Click Upload
+- Once all settings are configured, click on the **Review** button.
+- Review the settings one final time to ensure accuracy.
+- Click **Submit** to upload the sample DNS log file to Splunk.
 
-```text
-1331901006.800000	Cgrcup1c5uGRx428V7	192.168.202.93	60821	172.19.1.100	53	udp	3550	www.apple.com	1	C_INTERNET	28	AAAA	-	-	F	F	T	F	0	-	-	F
-✅ Prerequisites
+### 7. Verify Upload
+- After uploading, navigate to the search bar in the Splunk interface.
+- Run a search query to verify that the uploaded DNS events are visible.
+  
+  ```spl
+  index=<your_dns_index> sourcetype=<your_dns_sourcetype>
 
-Splunk Enterprise or Splunk Free installed
 
-Access to Splunk Web UI
+## Steps to Analyze DNS Log Files in Splunk SIEM
 
-Sample DNS logs (.log or .txt)
+### 1. Search for DNS Events   
+- Open Splunk interface and navigate to the search bar.   
+- Enter the following search query to retrieve DNS events   
+```
+index=* sourcetype=dns_sample
+```
 
-A custom source type (e.g., dns_sample)
-🚀 Getting Started
-1. Upload DNS Logs to Splunk
+### 2. Extract Relevant Fields
+- Identify key fields in DNS logs such as source IP, destination IP, domain name, query type, response code, etc.   
+- As mentioned below,  | regex _raw="(?i)\b(dns|domain|query|response|port 53)\b": This regex searches for common DNS-related keywords in the raw event data.
+- Example extraction command:
+```
+index=* sourcetype=dns_sample | regex _raw="(?i)\b(dns|domain|query|response|port 53)\b"
+```
 
-Open Splunk Web → Settings > Add Data
+### 3. Identify Anomalies
+- Look for unusual patterns or anomalies in DNS activity.
+- Example query to identify spikes
+```
+index=_* OR index=* sourcetype=dns_sample  | stats count by fqdn
+```
 
-Choose Upload and select sample_dns_logs.log
+### 4. Find the top DNS sources
+- Use the top command to count the occurrences of each query type:   
+```
+index=* sourcetype=dns_sample | top fqdn, src_ip
+```
 
-Assign sourcetype: dns_sample
 
-Choose or create an index (e.g., dns_index)
 
-Complete the wizard and ingest the file
+### 5. Investigate Suspicious Domains
+- Search for domains associated with known malicious activity or suspicious behavior.
+- Utilize threat intelligence feeds or reputation databases to identify malicious domains such virustotal.com
+- Example search for known malicious domains:
+```
+index=* sourcetype=dns_sample fqdn="maliciousdomain.com"
+```
 
-2. Extract Fields with REX
+## Conclusion
+Analyzing DNS log files using Splunk SIEM enables security professionals to detect and respond to potential security incidents effectively. By understanding DNS activity and identifying anomalies, organizations can enhance their overall security posture and protect against various cyber threats.
 
-Use the following rex command to extract all 23 fields:
-| rex field=_raw "^(?<timestamp>\d+\.\d+)\s+(?<session_id>\S+)\s+(?<src_ip>\d{1,3}(?:\.\d{1,3}){3})\s+(?<src_port>\d+)\s+(?<dst_ip>\d{1,3}(?:\.\d{1,3}){3})\s+(?<dst_port>\d+)\s+(?<protocol>\S+)\s+(?<transaction_id>\d+)\s+(?<query_name>\S+)\s+(?<query_count>\d+)\s+(?<query_class>\S+)\s+(?<ttl>\d+)\s+(?<record_type>\S+)\s+(?<field14>\S+)\s+(?<field15>\S+)\s+(?<flag1>[FT])\s+(?<flag2>[FT])\s+(?<flag3>[FT])\s+(?<flag4>[FT])\s+(?<response_code>\d+)\s+(?<field21>\S+)\s+(?<field22>\S+)\s+(?<final_flag>[FT])"
-🔍 Useful SPL Queries
-Top Queried Domains and Source IPs
-index=dns_index sourcetype=dns_sample
-| rex <your full rex here>
-| top query_name, src_ip
+Feel free to customize these steps according to your specific use case and requirements. 
 
-DNS Query Trends Over Time
-index=dns_index sourcetype=dns_sample
-| rex <rex>
-| timechart span=10m count by src_ip
+Happy analyzing!
 
-Suspicious or Known Bad Domains
-index=dns_index sourcetype=dns_sample
-| rex <rex>
-| search query_name IN ("maliciousdomain.com", "badguy.net")
+
