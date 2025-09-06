@@ -11,7 +11,7 @@ Before analyzing DNS logs in Splunk, ensure the following:
 ## Steps to Upload Sample DNS Log Files to Splunk SIEM
 
 ### 1. Prepare Sample DNS Log Files
-- Obtain sample [dns.log](./dns.log.gz) in a suitable format (e.g., text files).
+- Obtain sample [dns.log.gz](./dns.log.gz) in a suitable format (e.g., text files).
 - Ensure the log files contain relevant DNS events, including source IP, destination IP, domain name, query type, response code, etc.
 - Save the sample log files in a directory accessible by the Splunk instance.
 
@@ -41,7 +41,7 @@ Before analyzing DNS logs in Splunk, ensure the following:
 - Run a search query to verify that the uploaded DNS events are visible.
   
   ```spl
-  index=* sourcetype=dns_log
+  index=* sourcetype=dns.log
 
 
 ## Steps to Analyze DNS Log Files in Splunk SIEM
@@ -50,12 +50,15 @@ Before analyzing DNS logs in Splunk, ensure the following:
 - Open Splunk interface and navigate to the search bar.   
 - Enter the following search query to retrieve DNS events   
 ```
-index=* sourcetype=dns_log
+index=* sourcetype=dns.log
 ```
+
 I see the following raw entries in the file
+```
 1331901167.790000	C4Lm8j35dGSjarAZee	192.168.202.80	56035	192.168.202.255	137	udp	20835	\x01\x02__MSBROWSE__\x02	1	C_INTERNET	32	NB	-	-	F	F	T	F	1	-	-	F
 1331901167.670000	CUCyRCVH9UrMcxLQ9	192.168.202.84	52410	192.168.202.255	137	udp	30508	TIRANI	1	C_INTERNET	32	NB	-	-	F	F	T	F	1	-	-	F
 1331901167.940000	CUCyRCVH9UrMcxLQ9	192.168.202.84	52410	192.168.202.255	137	udp	30508	TIRANI	1	C_INTERNET	32	NB	-	-	F	F	T	F	1	-	-	F
+```
 It looks like there are 23 enties.
 
 ### 2. Extract Relevant Fields
@@ -94,13 +97,20 @@ index=* sourcetype="dnslog"
 ```
 [rare10domains](./rare10domains.png)
 
-### 5. Investigate Suspicious Domains
+Investigate Suspicious Domains
 - Search for domains associated with known malicious activity or suspicious behavior.
 - Utilize threat intelligence feeds or reputation databases to identify malicious domains such virustotal.com
-- Example search for known malicious domains:
+
+### 5. Time Series Trend Analysis (Spikes, Drops)
+- Visualize and alert on unexpected drops/spikes in DNS traffic.
+Then configure an alert in Splunk if the dns_count drops to 0 or spikes above normal.
 ```
-index=* sourcetype=dns_sample fqdn="maliciousdomain.com"
+index=* sourcetype="dnslog"
+| rex field=_raw "^(?<timestamp>\d+\.\d+)\s+(?<session_id>\S+)\s+(?<src_ip>\d{1,3}(?:\.\d{1,3}){3})\s+(?<src_port>\d+)\s+(?<dst_ip>\d{1,3}(?:\.\d{1,3}){3})\s+(?<dst_port>\d+)\s+(?<protocol>\S+)\s+(?<transaction_id>\d+)\s+(?<query_name>\S+)\s+(?<query_count>\d+)\s+(?<query_class>\S+)\s+(?<ttl>\d+)\s+(?<record_type>\S+)\s+(?<field14>\S+)\s+(?<field15>\S+)\s+(?<flag1>[FT])\s+(?<flag2>[FT])\s+(?<flag3>[FT])\s+(?<flag4>[FT])\s+(?<response_code>\d+)\s+(?<field21>\S+)\s+(?<field22>\S+)\s+(?<final_flag>[FT])"
+| table timestamp session_id src_ip src_port dst_ip dst_port protocol transaction_id query_name query_count query_class ttl record_type flag1 flag2 flag3 flag4 response_code final_flag
+| timechart span=2h count as dns_count
 ```
+[DNS_Query_Trend.png](./DNS_Query_Trend.png)
 
 ## Conclusion
 Analyzing DNS log files using Splunk SIEM enables security professionals to detect and respond to potential security incidents effectively. By understanding DNS activity and identifying anomalies, organizations can enhance their overall security posture and protect against various cyber threats.
